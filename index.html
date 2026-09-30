@@ -12,6 +12,18 @@
       <div id="game-canvas-container"></div>
 
       <section class="hud" aria-label="Game information">
+         <div class="energy-panel">
+          <div class="energy-label">
+            <span>Energy</span>
+            <span id="energy-readout">100 / 100</span>
+          </div>
+
+          <div class="energy-bar">
+            <div id="energy-fill"></div>
+          </div>
+
+          <p id="movement-state">Grounded</p>
+        </div>
         <div class="brand-panel">
           <p class="eyebrow">Terraswarm</p>
           <h1>Gaia: First Steps</h1>
@@ -26,7 +38,7 @@
             <span class="key">S</span>
             <span class="key">D</span>
           </div>
-          <p class="hint">Arrow keys also work · Drag to look · Space to jump</p>
+          <p class="hint">Arrow keys also work · Drag to look · Space to jump/fly · Shift to sprint</p>
         </div>
 
         <div class="coordinates-panel" aria-live="polite">
