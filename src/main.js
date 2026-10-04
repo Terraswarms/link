@@ -140,6 +140,7 @@ const capeBasePositions =
 
   // Simple landmarks make movement and scale visible in the prototype.
   const landmarkMaterial = new THREE.MeshStandardMaterial({ color: 0x607b8b, roughness: 0.95 });
+  const terrainColliders = [];
   for (let z = -60; z <= 60; z += 12) {
     for (const x of [-7, 7]) {
       const stone = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.1, 2.6, 8), landmarkMaterial);
@@ -147,13 +148,18 @@ const capeBasePositions =
       stone.rotation.z = (x + z) * 0.01;
       stone.castShadow = true;
       scene.add(stone);
+      terrainColliders.push({
+        x,
+        z,
+        radius: 1.1
+      });
     }
   }
 
   const keys = new Set();
+  const turnSpeed = 2.5;
   const movementKeys = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"]);
   const playerHeight = 0;
-  const jumpVelocity = 8.5;
   const gravity = 22;
   let verticalVelocity = 0;
   let isGrounded = true;
@@ -298,9 +304,11 @@ function updateCapeAnimation(hasMovementInput) {
   positions.needsUpdate = true;
   capeGeometry.computeVertexNormals();
 }
+
 function isSprintHeld() {
   return keys.has("ShiftLeft") || keys.has("ShiftRight");
 }
+
 function updateFlyingPose(delta) {
   const targetRotationX = isFlying ? 0.95 : 0;
 
@@ -310,25 +318,65 @@ function updateFlyingPose(delta) {
     1 - Math.pow(0.001, delta)
   );
 }
+
+const playerCollisionRadius = 0.65;
+
+function resolveTerrainCollision() {
+  // Flying characters can currently pass over landmarks.
+  if (isFlying) return;
+
+  for (const collider of terrainColliders) {
+    const offsetX = player.position.x - collider.x;
+    const offsetZ = player.position.z - collider.z;
+
+    let distance = Math.sqrt(
+      offsetX * offsetX +
+      offsetZ * offsetZ
+    );
+
+    const minimumDistance =
+      collider.radius + playerCollisionRadius;
+
+    if (distance < minimumDistance) {
+      // Prevent division by zero if the player is exactly at the marker center.
+      if (distance === 0) {
+        distance = 0.001;
+      }
+
+      const pushAmount =
+        (minimumDistance - distance) / distance;
+
+      player.position.x += offsetX * pushAmount;
+      player.position.z += offsetZ * pushAmount;
+    }
+  }
+}
   function update(delta) {
     direction.set(0, 0, 0);
     energyConsumedThisFrame = false;
 
     if (keys.has("KeyW") || keys.has("ArrowUp")) direction.z -= 1;
     if (keys.has("KeyS") || keys.has("ArrowDown")) direction.z += 1;
-    if (keys.has("KeyA") || keys.has("ArrowLeft")) direction.x -= 1;
-    if (keys.has("KeyD") || keys.has("ArrowRight")) direction.x += 1;
+    if (keys.has("KeyA") || keys.has("ArrowLeft")) {
+      cameraYaw += turnSpeed * delta;
+    }
+
+    if (keys.has("KeyD") || keys.has("ArrowRight")) {
+      cameraYaw -= turnSpeed * delta;
+    }
 
     const hasMovementInput = direction.lengthSq() > 0;
 
     if (hasMovementInput) {
       direction.normalize();
-
-      // Keep movement relative to the camera direction.
-      direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw);
-
-      player.rotation.y = Math.atan2(direction.x, direction.z);
+      direction.applyAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        cameraYaw
+      );
     }
+
+    // The player faces the direction the camera is looking.
+    player.rotation.y = cameraYaw + Math.PI;
 
     const wantsToFly =
       keys.has("Space") &&
@@ -430,6 +478,7 @@ energy = THREE.MathUtils.clamp(energy, 0, maxEnergy);
       maxWorldDistance
     );
 
+    resolveTerrainCollision();
     updateEnergyHud();
 
     cameraTarget.set(
