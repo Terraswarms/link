@@ -12,18 +12,6 @@
       <div id="game-canvas-container"></div>
 
       <section class="hud" aria-label="Game information">
-         <div class="energy-panel">
-          <div class="energy-label">
-            <span>Energy</span>
-            <span id="energy-readout">100 / 100</span>
-          </div>
-
-          <div class="energy-bar">
-            <div id="energy-fill"></div>
-          </div>
-
-          <p id="movement-state">Grounded</p>
-        </div>
         <div class="brand-panel">
           <p class="eyebrow">Terraswarm</p>
           <h1>Gaia: First Steps</h1>
@@ -38,16 +26,25 @@
             <span class="key">S</span>
             <span class="key">D</span>
           </div>
-          <p class="hint">Arrow keys also work · Drag to look · Space to jump/fly · Shift to sprint</p>
+          <p class="hint">W/S move · A/D turn · Drag to look · Space fly · Shift sprint</p>
         </div>
 
         <div class="coordinates-panel" aria-live="polite">
           <p class="panel-label">Position</p>
           <p id="position-readout">X 0.0 &nbsp; Z 0.0</p>
         </div>
+
+        <div class="energy-panel">
+          <div class="energy-label">
+            <span>Energy</span>
+            <span id="energy-readout">100 / 100</span>
+          </div>
+          <div class="energy-bar"><div id="energy-fill"></div></div>
+          <p id="movement-state">Grounded</p>
+        </div>
       </section>
 
-      <div id="loading-message" class="loading-message">Loading Gaia…</div>
+      <div id="loading-message" class="loading-message">Loading world…</div>
       <div id="error-message" class="error-message" hidden>
         The prototype could not start. Please run it through a local web server.
       </div>
